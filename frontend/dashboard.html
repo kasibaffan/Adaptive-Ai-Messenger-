@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adaptive AI Messenger — Dashboard</title>
+<link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+<body>
+
+<div id="auth-view" class="auth-wrap">
+  <div class="auth-hero">
+    <div class="auth-hero-badge">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
+      Multi-tenant AI support, no LLM bill
+    </div>
+    <h1>One assistant.<br />Adapts to every<br />company that signs up.</h1>
+    <p class="lead">Upload your docs, embed a chat widget on your site, and let your
+    assistant answer customers from your own knowledge base — with zero API key required.</p>
+    <div class="auth-hero-features">
+      <div class="auth-hero-feature">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
+        <span>Answers strictly from your own uploaded documents — never hallucinates</span>
+      </div>
+      <div class="auth-hero-feature">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
+        <span>Branded chat widget, drop into any site with one script tag</span>
+      </div>
+      <div class="auth-hero-feature">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
+        <span>Automatic reminders by email, SMS, or WhatsApp</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-card-logo">
+        <span class="brand-dot"></span> Adaptive AI Messenger
+      </div>
+      <h2 id="auth-heading">Welcome back</h2>
+      <p class="sub">Log in or register your company to get started.</p>
+
+      <div class="tabs">
+        <button type="button" class="tab-btn active" data-tab="login">Log in</button>
+        <button type="button" class="tab-btn" data-tab="register">Register your company</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <input type="email" id="login-email" placeholder="Work email" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button type="submit"><span class="btn-label">Log in</span></button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden">
+        <input type="text" id="reg-name" placeholder="Company name" required />
+        <input type="email" id="reg-email" placeholder="Work email" required />
+        <input type="password" id="reg-password" placeholder="Password" required />
+        <label for="reg-tone">Tone</label>
+        <select id="reg-tone" name="tone">
+          <option value="professional">Professional tone</option>
+          <option value="friendly">Friendly tone</option>
+          <option value="formal">Formal tone</option>
+        </select>
+        <input type="text" id="reg-persona" placeholder="Assistant name (e.g. Aria)" />
+        <label class="consent-row">
+          <input type="checkbox" id="reg-consent" required />
+          <span>I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+          and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></span>
+        </label>
+        <button type="submit"><span class="btn-label">Create account</span></button>
+      </form>
+
+      <p id="auth-error" class="error hidden"></p>
+      <p class="legal-footer"><a href="/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="/terms" target="_blank" rel="noopener">Terms</a></p>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+<div id="app-view" class="app hidden">
+  <div class="mobile-topbar">
+    <button type="button" id="sidebar-open" aria-label="Open menu">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+    </button>
+    <div class="brand"><span class="brand-dot"></span> Adaptive AI Messenger</div>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-label"><span class="brand-dot"></span> Adaptive AI Messenger</span>
+      <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close menu">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg>
+      </button>
+    </div>
+    <nav>
+      <button type="button" class="nav-btn active" data-section="overview">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
+        <span>Overview</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="documents">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.5h7l3 3v12h-10z"/><path d="M12 2.5v3h3"/><path d="M7 10h6M7 13h6M7 16h4"/></svg>
+        <span>Knowledge base</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="gaps">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7.6 7.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .8-1 1.6"/><circle cx="10" cy="14" r=".3" fill="currentColor"/></svg>
+        <span>Knowledge gaps</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="reminders">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8a5 5 0 0 1 10 0c0 3 1 4.5 1 4.5h-12s1-1.5 1-4.5z"/><path d="M8.3 15.5a1.7 1.7 0 0 0 3.4 0"/></svg>
+        <span>Reminders</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="logs">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h14v9h-7l-3.5 3v-3h-3.5z"/></svg>
+        <span>Chat logs</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="embed">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6 3 10l4 4M13 6l4 4-4 4"/></svg>
+        <span>Embed widget</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="billing">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="10" rx="1.5"/><path d="M2.5 8.5h15"/></svg>
+        <span>Billing</span>
+      </button>
+      <button type="button" class="nav-btn" data-section="settings">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.7v2M10 15.3v2M17.3 10h-2M4.7 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3 4.9 4.9"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+    <p class="legal-footer sidebar-legal"><a href="/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="/terms" target="_blank" rel="noopener">Terms</a></p>
+    <button type="button" id="logout-btn" class="logout">Log out</button>
+  </aside>
+
+  <main class="content">
+    <section id="section-overview" class="section">
+      <h2>Welcome, <span id="company-name-label"></span></h2>
+      <p class="muted">Your assistant is live. Upload documents to teach it, monitor what it can't
+      answer yet, and set up reminders that send automatically.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-docs">0</div><div>Documents indexed</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-gaps">0</div><div>Open knowledge gaps</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-reminders">0</div><div>Pending reminders</div></div>
+      </div>
+
+      <h3 class="section-subhead">Usage this month</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-messages">0</div>
+          <div>Messages handled <span class="muted" id="stat-messages-limit"></span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-plan-label">Free</div>
+          <div>Current plan</div>
+        </div>
+      </div>
+
+      <h3 class="section-subhead">Messages, last 14 days</h3>
+      <div id="usage-chart" class="bar-chart"></div>
+
+      <h3 class="section-subhead">Customer sentiment</h3>
+      <div id="sentiment-bar" class="sentiment-bar"></div>
+      <div id="sentiment-legend" class="sentiment-legend"></div>
+    </section>
+
+    <section id="section-documents" class="section hidden">
+      <h2>Knowledge base</h2>
+      <p class="muted">Upload PDFs, Word docs, or text files. The assistant answers customers using this content.</p>
+      <form id="upload-form">
+        <label for="upload-file">Choose a document to upload</label>
+        <input type="file" id="upload-file" accept=".pdf,.docx,.doc,.txt" required />
+        <button type="submit"><span class="btn-label">Upload &amp; index</span></button>
+      </form>
+      <ul id="doc-list" class="item-list"></ul>
+    </section>
+
+    <section id="section-gaps" class="section hidden">
+      <h2>Knowledge gaps</h2>
+      <p class="muted">Questions the assistant couldn't answer. Answer once and it learns for next time.</p>
+      <ul id="gap-list" class="item-list"></ul>
+    </section>
+
+    <section id="section-reminders" class="section hidden">
+      <h2>Reminders</h2>
+      <p class="muted">Automatic follow-ups sent to customers by email, SMS, or WhatsApp.</p>
+      <form id="reminder-form">
+        <label for="rem-channel">Channel</label>
+        <select id="rem-channel">
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+        <input type="email" id="rem-email" placeholder="Customer email" />
+        <input type="text" id="rem-phone" placeholder="Customer phone, e.g. +14155551234" class="hidden" />
+        <input type="text" id="rem-message" placeholder="Reminder message" required />
+        <label for="rem-trigger">Trigger</label>
+        <select id="rem-trigger">
+          <option value="scheduled">Send at a specific time</option>
+          <option value="no_reply">Send after N hours (no reply)</option>
+        </select>
+        <input type="text" id="rem-value" placeholder="2026-06-20T10:00 or hours e.g. 24" required />
+        <button type="submit"><span class="btn-label">Schedule reminder</span></button>
+      </form>
+      <p class="muted">SMS/WhatsApp require Twilio credentials configured on the server — see <code>.env.example</code>.</p>
+      <ul id="reminder-list" class="item-list"></ul>
+    </section>
+
+    <section id="section-logs" class="section hidden">
+      <h2>Chat logs</h2>
+      <p class="muted">Last 100 exchanges across all customers.</p>
+      <ul id="log-list" class="item-list"></ul>
+    </section>
+
+    <section id="section-embed" class="section hidden">
+      <h2>Embed widget</h2>
+      <p class="muted">Paste this snippet before <code>&lt;/body&gt;</code> on your site. Your assistant adapts
+      automatically — tone, persona, and knowledge are pulled from your account.</p>
+      <pre id="embed-snippet" class="code-block"></pre>
+      <button type="button" id="copy-embed"><span class="btn-label">Copy snippet</span></button>
+    </section>
+
+    <section id="section-billing" class="section hidden">
+      <h2>Billing</h2>
+      <p class="muted">Your current plan and usage limits.</p>
+      <div id="plan-cards" class="plan-cards"></div>
+      <p id="billing-not-configured" class="muted hidden">
+        Billing isn't set up yet on this server. Add Stripe API keys to enable upgrades.
+      </p>
+    </section>
+
+    <section id="section-settings" class="section hidden">
+      <h2>Settings</h2>
+      <form id="settings-form">
+        <label>Assistant name<input type="text" id="set-persona" /></label>
+        <label>Tone
+          <select id="set-tone">
+            <option value="professional">Professional</option>
+            <option value="friendly">Friendly</option>
+            <option value="formal">Formal</option>
+          </select>
+        </label>
+        <label>Brand color<input type="color" id="set-brand-color" value="#4f46e5" /></label>
+        <label>Logo URL<input type="text" id="set-logo-url" placeholder="https://yoursite.com/logo.png" /></label>
+        <label>Slack notifications (optional)
+          <input type="text" id="set-slack-webhook" placeholder="https://hooks.slack.com/services/..." />
+        </label>
+        <p class="muted">Get pinged in Slack when a customer is escalated or asks something your
+        assistant can't answer. Create a free
+        <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noopener">Incoming Webhook</a>
+        in your own Slack workspace and paste the URL here — no app install needed.</p>
+        <button type="submit"><span class="btn-label">Save changes</span></button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<div id="gap-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h2>Answer this question</h2>
+    <p id="gap-modal-question" class="muted"></p>
+    <textarea id="gap-modal-answer" placeholder="How should the assistant answer this from now on?"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" id="gap-modal-submit"><span class="btn-label">Save answer</span></button>
+      <button type="button" class="btn-secondary" id="gap-modal-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="onboarding-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="onboarding-progress">
+      <span class="onb-dot done"></span><span class="onb-dot"></span><span class="onb-dot"></span>
+    </div>
+
+    <div id="onboarding-step-1" class="onboarding-step">
+      <h2>Welcome to Adaptive AI Messenger 👋</h2>
+      <p>Let's get your assistant set up in three quick steps.</p>
+      <p class="muted">Step 1 of 3 — Give your assistant a name and tone.</p>
+      <label>Assistant name<input type="text" id="onb-persona" placeholder="e.g. Aria" /></label>
+      <label>Tone
+        <select id="onb-tone">
+          <option value="professional">Professional</option>
+          <option value="friendly">Friendly</option>
+          <option value="formal">Formal</option>
+        </select>
+      </label>
+      <button type="button" id="onb-step1-next"><span class="btn-label">Next</span></button>
+      <button type="button" id="onb-skip" class="onb-skip">Skip setup</button>
+    </div>
+
+    <div id="onboarding-step-2" class="onboarding-step hidden">
+      <h2>Step 2 of 3 — Upload your first document</h2>
+      <p class="muted">PDFs, Word docs, or text files. Your assistant will only ever answer from what you give it here.</p>
+      <label for="onb-file">Choose a document to upload</label>
+      <input type="file" id="onb-file" accept=".pdf,.docx,.doc,.txt" />
+      <button type="button" id="onb-step2-upload"><span class="btn-label">Upload &amp; continue</span></button>
+      <button type="button" id="onb-step2-next" class="onb-skip">I'll do this later</button>
+    </div>
+
+    <div id="onboarding-step-3" class="onboarding-step hidden">
+      <h2>Step 3 of 3 — Embed your widget</h2>
+      <p class="muted">Paste this snippet before <code>&lt;/body&gt;</code> on your website.</p>
+      <pre id="onb-embed-snippet" class="code-block"></pre>
+      <button type="button" id="onb-finish"><span class="btn-label">Done — take me to my dashboard</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="/static/dashboard.js"></script>
+</body>
+</html>

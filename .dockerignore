@@ -1,0 +1,12 @@
+**/__pycache__
+**/*.pyc
+backend/messenger.db
+backend/chroma_store/
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/.pytest_cache
+backend/tests/
+.env
+.git
+.gitignore
+*.md
