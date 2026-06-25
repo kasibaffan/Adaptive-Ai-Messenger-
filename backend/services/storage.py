@@ -69,3 +69,14 @@ def delete_backup(company_id: str, doc_id: str, ext: str):
         s3.delete_object(Bucket=S3_BUCKET, Key=key)
     except Exception as e:
         logger.warning(f"S3 delete failed for {company_id}/{doc_id}: {e}")
+
+
+def delete_company_dir(company_id: str):
+    """Removes a company's entire local upload directory — used when
+    deleting the company's account. Best-effort: doesn't touch S3 (callers
+    should delete_backup() each document individually first if needed)."""
+    company_dir = os.path.join(UPLOAD_DIR, company_id)
+    try:
+        shutil.rmtree(company_dir, ignore_errors=True)
+    except Exception as e:
+        logger.warning(f"Failed to remove local upload dir for {company_id}: {e}")

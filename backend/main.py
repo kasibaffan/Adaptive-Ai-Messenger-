@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response, JSONResponse
 from dotenv import load_dotenv
-from database import init_db
+from database import run_migrations
 from services.scheduler import start_scheduler, stop_scheduler
 from services.rate_limit import limiter
 from routes import auth, documents, chat, reminders, gaps, billing
@@ -40,7 +40,7 @@ def _is_public_widget_path(path: str) -> bool:
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    run_migrations()
     start_scheduler()
     yield
     stop_scheduler()

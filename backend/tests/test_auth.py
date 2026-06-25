@@ -41,3 +41,32 @@ def test_me_defaults_to_free_plan(client, registered_company):
     body = res.json()
     assert body["plan"] == "free"
     assert body["brand_color"] == "#4f46e5"
+
+
+def test_delete_account_wrong_password_rejected(client, registered_company):
+    res = client.request(
+        "DELETE", "/auth/account",
+        headers=registered_company["headers"],
+        json={"password": "not-the-right-password"},
+    )
+    assert res.status_code == 401
+
+
+def test_delete_account_removes_company(client, registered_company):
+    res = client.request(
+        "DELETE", "/auth/account",
+        headers=registered_company["headers"],
+        json={"password": "testpass123"},
+    )
+    assert res.status_code == 200
+
+    # Account is gone — login no longer works
+    login = client.post("/auth/login", json={
+        "email": registered_company["email"],
+        "password": "testpass123",
+    })
+    assert login.status_code == 401
+
+    # Token is also dead — the company row backing it no longer exists
+    me = client.get("/auth/me", headers=registered_company["headers"])
+    assert me.status_code == 401

@@ -31,6 +31,10 @@ class TokenResponse(BaseModel):
     company_name: str
 
 
+class AccountDeleteConfirm(BaseModel):
+    password: str
+
+
 class ChatRequest(BaseModel):
     message: str
     customer_id: str

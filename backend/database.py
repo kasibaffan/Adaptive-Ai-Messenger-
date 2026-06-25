@@ -107,4 +107,37 @@ def get_db():
 
 
 def init_db():
+    """Dev/test convenience: create tables directly from the models, no
+    migration history involved. Production startup uses run_migrations()
+    instead — see below."""
     Base.metadata.create_all(bind=engine)
+
+
+def run_migrations():
+    """Brings the database up to the latest Alembic revision on startup.
+
+    Handles three cases:
+      - Fresh DB (no tables at all): runs every migration from scratch.
+      - Pre-Alembic DB (tables exist from the old init_db()/create_all()
+        path, no alembic_version table yet): stamps it at the initial
+        revision instead of re-running CREATE TABLE on tables that already
+        exist — this is the one-time bridge for databases that existed
+        before migrations were introduced.
+      - Already-migrated DB: applies any new revisions since last deploy.
+    """
+    import os
+    from sqlalchemy import inspect
+    from alembic.config import Config
+    from alembic import command
+
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    alembic_cfg = Config(os.path.join(backend_dir, "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", os.path.join(backend_dir, "migrations"))
+
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+
+    if "alembic_version" not in existing_tables and "companies" in existing_tables:
+        command.stamp(alembic_cfg, "head")
+    else:
+        command.upgrade(alembic_cfg, "head")

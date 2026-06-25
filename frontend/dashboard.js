@@ -446,6 +446,43 @@
     }
   });
 
+  // ---------- Delete account ----------
+  var deleteAccountModal = document.getElementById("delete-account-modal");
+  var deleteAccountPassword = document.getElementById("delete-account-password");
+
+  document.getElementById("open-delete-account").addEventListener("click", function () {
+    deleteAccountPassword.value = "";
+    deleteAccountModal.classList.remove("hidden");
+    deleteAccountPassword.focus();
+  });
+  document.getElementById("delete-account-cancel").addEventListener("click", function () {
+    deleteAccountModal.classList.add("hidden");
+  });
+  document.getElementById("delete-account-submit").addEventListener("click", async function () {
+    var password = deleteAccountPassword.value;
+    if (!password) return;
+    var btn = this;
+    setButtonLoading(btn, true);
+    try {
+      await api("/auth/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: password })
+      });
+      deleteAccountModal.classList.add("hidden");
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(COMPANY_ID_KEY);
+      localStorage.removeItem(COMPANY_NAME_KEY);
+      appView.classList.add("hidden");
+      authView.classList.remove("hidden");
+      toast("Account deleted");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setButtonLoading(btn, false);
+    }
+  });
+
   // ---------- Usage stats (Overview) ----------
   var PLAN_LABELS = { free: "Free", pro: "Pro", enterprise: "Enterprise" };
 

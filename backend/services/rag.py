@@ -84,6 +84,15 @@ def delete_document(company_id: str, doc_id: str):
         collection.delete(ids=ids_to_delete)
 
 
+def delete_company_collection(company_id: str):
+    """Drops a company's entire vector collection — used when deleting the
+    company's account, instead of removing documents one at a time."""
+    try:
+        client.delete_collection(name=f"company_{company_id}")
+    except Exception:
+        pass  # collection may not exist yet (e.g. company never uploaded a document)
+
+
 def query_knowledge(company_id: str, question: str, top_k: int = 5) -> tuple[list[str], int, list[float]]:
     collection = _get_collection(company_id)
     count = collection.count()

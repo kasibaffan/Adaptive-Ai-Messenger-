@@ -250,8 +250,31 @@
         in your own Slack workspace and paste the URL here — no app install needed.</p>
         <button type="submit"><span class="btn-label">Save changes</span></button>
       </form>
+
+      <h3 class="section-subhead danger-subhead">Danger zone</h3>
+      <div class="danger-zone">
+        <div>
+          <strong>Delete this account</strong>
+          <p class="muted">Permanently deletes your company, all uploaded documents, the
+          knowledge base, chat logs, reminders, and knowledge gaps. This cannot be undone.</p>
+        </div>
+        <button type="button" id="open-delete-account" class="btn-danger">Delete account</button>
+      </div>
     </section>
   </main>
+</div>
+
+<div id="delete-account-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h2>Delete your account?</h2>
+    <p class="muted">This permanently deletes your company, documents, knowledge base, chat
+    logs, reminders, and knowledge gaps. There is no undo. Enter your password to confirm.</p>
+    <input type="password" id="delete-account-password" placeholder="Your password" />
+    <div class="modal-actions">
+      <button type="button" class="btn-danger" id="delete-account-submit"><span class="btn-label">Permanently delete</span></button>
+      <button type="button" class="btn-secondary" id="delete-account-cancel">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div id="gap-modal" class="modal-overlay hidden">
