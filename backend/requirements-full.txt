@@ -1,0 +1,12 @@
+# Adds the local extractive QA model (DistilBERT) on top of the base
+# requirements — gives precise answer-span extraction instead of returning
+# the whole matched passage. Needs ~500MB+ RAM, so this is for local dev /
+# hosts with enough memory (Google Cloud Run, a paid higher-RAM tier, etc.)
+# rather than free-tier hosts capped around 512MB (Render, Koyeb).
+#
+# Without this installed, backend/services/llm.py automatically falls back
+# to direct passage retrieval — no code changes needed either way.
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+transformers==4.46.3

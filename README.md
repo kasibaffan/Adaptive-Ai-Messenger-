@@ -19,10 +19,14 @@ service, isolated behavior per company.
 - **Retrieval + local extractive QA, no LLM API cost**: the chatbot never
   generates free-form text via an external model. It embeds the customer's
   question locally (ChromaDB's built-in sentence-transformers model), finds
-  the best-matching passage from that company's uploaded documents, then runs
-  a small local question-answering model (DistilBERT, downloaded once from
+  the best-matching passage from that company's uploaded documents, then —
+  if `torch`/`transformers` are installed (see `requirements-full.txt`) —
+  runs a local question-answering model (DistilBERT, downloaded once from
   Hugging Face and cached — no API key, no per-message cost) to pull the
-  precise answer span out of that passage. If nothing matches well enough, it
+  precise answer span out of that passage. On a memory-constrained host
+  where those packages aren't installed, it automatically falls back to
+  returning the matched passage directly — same retrieval, just not
+  trimmed to the exact phrase. If nothing matches well enough either way, it
   returns a fixed "I don't have that information yet" message and logs the
   question as a knowledge gap. The bot can only ever say what's grounded in
   the company's own documents — it can't hallucinate or answer from outside
@@ -73,10 +77,16 @@ service, isolated behavior per company.
 
 ```bash
 cd backend
-pip install -r requirements.txt
+pip install -r requirements-full.txt   # or requirements.txt for the lighter, no-QA-model build
 cp ../.env.example ../.env   # fill in SECRET_KEY at minimum; SMTP/ALLOWED_ORIGINS/DATABASE_URL are optional
 uvicorn main:app --reload
 ```
+
+`requirements.txt` is the lightweight set (fits free-tier hosts around
+512MB RAM); `requirements-full.txt` adds PyTorch + transformers for the
+precise answer-extraction model. The app runs identically either way —
+`backend/services/llm.py` detects whether those packages are installed and
+falls back to direct passage retrieval if not.
 
 Then open `http://localhost:8000/` for the company dashboard. Register a
 company, upload a document, and copy the generated embed snippet from the
@@ -159,14 +169,50 @@ server.
   > customers are located. Search both files for `[` to find every
   > placeholder.
 
-## Deploying publicly (Google Cloud Run)
+## Deploying publicly
+
+Two documented paths, depending on whether you're willing to put a card on
+file with Google Cloud:
+
+| | Render | Google Cloud Run |
+|---|---|---|
+| Card required | **No** | Yes (for billing verification; free quota itself isn't charged) |
+| Cost at low traffic | $0/mo | $0/mo |
+| RAM ceiling | 512MB (free *and* $7/mo tiers) | You choose — no fixed ceiling |
+| Local extractive QA model | Not installed (`requirements.txt`) — falls back to passage retrieval automatically | Installed (`requirements-full.txt`) — full precision |
+| Disk persistence | Ephemeral (use external Postgres + accept Chroma/uploads reset on restart) | Same |
+
+### Option A: Render (no card, recommended if you don't want to add billing)
+
+1. Sign up free at [render.com](https://render.com) (GitHub/GitLab/Google sign-in, no card).
+2. **New > Web Service**, connect the `adaptive-ai-messenger` GitHub repo.
+3. Set:
+   - **Root Directory**: `backend`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4. Add environment variables (Render's dashboard, under the service's
+   "Environment" tab): `SECRET_KEY` (generate with
+   `python -c "import secrets; print(secrets.token_hex(32))"`), `DATABASE_URL`
+   (a free [neon.tech](https://neon.tech) Postgres connection string — see
+   step 1 under Option B below), and any of the optional vars from
+   `.env.example` you want (Stripe/SMTP/Twilio/Sentry/S3).
+5. Deploy. Render builds and gives you a `https://<name>.onrender.com` URL.
+6. Update `ALLOWED_ORIGINS` and `APP_BASE_URL` env vars to that URL once you
+   have it (same reasoning as step 5 under Option B).
+
+This uses the lightweight `requirements.txt` — the chatbot returns matched
+passages directly instead of the precisely-extracted answer phrase (see the
+"Knowledge" section above). Free instances spin down after 15 minutes idle;
+the next request wakes it back up in under a minute.
+
+### Option B: Google Cloud Run (needs a billing card, full NLP stack)
 
 This stack (PyTorch + the local DistilBERT QA model + Chroma's embedding
-model) needs more than the 512MB RAM ceiling that both Render's free *and*
-$7/mo tiers cap out at. Cloud Run is the free option that actually fits: you
-choose the container's memory (no fixed ceiling), it scales to zero when
-idle (so cost stays $0 at low traffic — free quota is roughly 100
-container-hours/month), and there's no server to patch or maintain.
+model) needs more than Render's 512MB ceiling. Cloud Run lets you set the
+container's memory yourself and scales to zero when idle (free quota is
+roughly 100 container-hours/month), but Google requires a billing account
+linked to the project before it'll enable the Cloud Run/Cloud Build APIs —
+you won't be charged within the free quota, but the card has to be on file.
 
 **The trade-off to know going in**: Cloud Run containers are ephemeral, like
 any serverless platform — local disk (SQLite, the Chroma vector store,
@@ -176,6 +222,8 @@ documents will reset on cold starts unless you later add S3-compatible
 backup (already supported, see `S3_BUCKET` below) plus a re-ingestion step.
 For a launch/demo phase this is a reasonable trade — just know companies
 may occasionally need to re-upload a document after a long idle period.
+Also swap the Dockerfile's `requirements.txt` reference to
+`requirements-full.txt` first if you want the precise QA model in this path.
 
 ### 1. Free Postgres (Neon)
 

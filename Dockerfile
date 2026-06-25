@@ -6,6 +6,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
 
 WORKDIR /app
 
+# Lightweight by default (fits ~512MB-RAM hosts; chatbot falls back to direct
+# passage retrieval automatically — see backend/services/llm.py). Swap to
+# requirements-full.txt below for the precise QA-model answers on a host
+# with more RAM headroom (e.g. Cloud Run with --memory 2Gi).
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
