@@ -486,6 +486,41 @@
   // ---------- Usage stats (Overview) ----------
   var PLAN_LABELS = { free: "Free", pro: "Pro", enterprise: "Enterprise" };
 
+  function renderUsageChart(dailyCounts) {
+    var svg = document.getElementById("usage-chart");
+    var W = 600, H = 130, pad = 8;
+    if (!dailyCounts.length) { svg.innerHTML = ""; return; }
+    var max = Math.max(1, ...dailyCounts.map(function (d) { return d.count; }));
+    var n = dailyCounts.length;
+    var stepX = n > 1 ? (W - pad * 2) / (n - 1) : 0;
+
+    var points = dailyCounts.map(function (d, i) {
+      var x = pad + i * stepX;
+      var y = H - pad - (d.count / max) * (H - pad * 2);
+      return { x: x, y: y, d: d };
+    });
+
+    var linePath = points.map(function (p, i) { return (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1); }).join(" ");
+    var areaPath = linePath + " L" + points[n - 1].x.toFixed(1) + "," + (H - pad) + " L" + points[0].x.toFixed(1) + "," + (H - pad) + " Z";
+
+    var dotsHtml = points.map(function (p) {
+      return '<g class="chart-tooltip-group">' +
+        '<rect class="hit" x="' + (p.x - stepX / 2) + '" y="0" width="' + (stepX || W) + '" height="' + H + '" />' +
+        '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="2.5" fill="#22d3ee" />' +
+        '<text x="' + p.x.toFixed(1) + '" y="' + Math.max(10, p.y - 8) + '" text-anchor="middle">' + p.d.date + ": " + p.d.count + "</text>" +
+        "</g>";
+    }).join("");
+
+    svg.innerHTML =
+      '<defs><linearGradient id="usageGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />' +
+      '<stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />' +
+      "</linearGradient></defs>" +
+      '<path class="chart-area" d="' + areaPath + '" fill="url(#usageGrad)" stroke="none" />' +
+      '<path d="' + linePath + '" fill="none" stroke="#4f7cff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />' +
+      dotsHtml;
+  }
+
   async function loadStats() {
     var stats = await api("/chat/stats");
     document.getElementById("stat-messages").textContent = stats.messages_this_month;
@@ -493,16 +528,22 @@
       stats.messages_limit ? "/ " + stats.messages_limit : "(unlimited)";
     document.getElementById("stat-plan-label").textContent = PLAN_LABELS[stats.plan] || stats.plan;
 
-    var chart = document.getElementById("usage-chart");
-    chart.innerHTML = "";
-    var max = Math.max(1, ...stats.daily_counts.map(function (d) { return d.count; }));
-    stats.daily_counts.forEach(function (d) {
-      var bar = document.createElement("div");
-      bar.className = "bar";
-      bar.style.height = Math.max(2, (d.count / max) * 100) + "%";
-      bar.setAttribute("data-label", d.date + ": " + d.count);
-      chart.appendChild(bar);
-    });
+    renderUsageChart(stats.daily_counts);
+
+    var counts = stats.daily_counts.map(function (d) { return d.count; });
+    var half = Math.floor(counts.length / 2);
+    var recent = counts.slice(half).reduce(function (a, b) { return a + b; }, 0);
+    var prior = counts.slice(0, half).reduce(function (a, b) { return a + b; }, 0);
+    var trendEl = document.getElementById("stat-messages-trend");
+    if (prior === 0 && recent === 0) {
+      trendEl.className = "trend flat"; trendEl.textContent = "—";
+    } else if (prior === 0) {
+      trendEl.className = "trend up"; trendEl.textContent = "new";
+    } else {
+      var pct = Math.round(((recent - prior) / prior) * 100);
+      trendEl.className = "trend " + (pct > 0 ? "up" : pct < 0 ? "down" : "flat");
+      trendEl.textContent = (pct > 0 ? "+" : "") + pct + "%";
+    }
 
     var s = stats.sentiment_breakdown;
     var total = Math.max(1, s.positive + s.neutral + s.negative);
@@ -642,6 +683,81 @@
     showOnboardingStep(3);
     document.getElementById("onb-embed-snippet").textContent = embedSnippetFor(localStorage.getItem(COMPANY_ID_KEY));
   });
+
+  // ---------- Status pill ----------
+  (function checkStatus() {
+    var pill = document.getElementById("status-pill");
+    var text = document.getElementById("status-pill-text");
+    fetch(API_BASE + "/health").then(function (res) {
+      if (res.ok) {
+        pill.className = "status-pill online";
+        text.textContent = "All systems operational";
+      } else {
+        throw new Error("not ok");
+      }
+    }).catch(function () {
+      pill.className = "status-pill offline";
+      text.textContent = "Service unreachable";
+    });
+  })();
+
+  // ---------- Search/filter for lists ----------
+  function wireFilter(inputId, listId, matchFn) {
+    var input = document.getElementById(inputId);
+    var list = document.getElementById(listId);
+    input.addEventListener("input", function () {
+      var q = input.value.trim().toLowerCase();
+      Array.prototype.forEach.call(list.children, function (li) {
+        if (li.querySelector(".empty-state") || li.querySelector(".skeleton-row")) return;
+        var visible = !q || matchFn(li, q);
+        li.style.display = visible ? "" : "none";
+      });
+    });
+  }
+  wireFilter("doc-search", "doc-list", function (li, q) { return li.textContent.toLowerCase().indexOf(q) !== -1; });
+  wireFilter("gap-search", "gap-list", function (li, q) { return li.textContent.toLowerCase().indexOf(q) !== -1; });
+  wireFilter("log-search", "log-list", function (li, q) { return li.textContent.toLowerCase().indexOf(q) !== -1; });
+
+  // ---------- Playground tester ----------
+  var pgMessages = document.getElementById("pg-messages");
+  var pgInput = document.getElementById("pg-input");
+  var pgSend = document.getElementById("pg-send");
+  var pgHistory = [];
+
+  function pgAppend(role, content) {
+    var empty = pgMessages.querySelector(".pg-empty");
+    if (empty) empty.remove();
+    var div = document.createElement("div");
+    div.className = "pg-msg " + role;
+    div.textContent = content;
+    pgMessages.appendChild(div);
+    pgMessages.scrollTop = pgMessages.scrollHeight;
+  }
+
+  async function pgSendMessage() {
+    var text = pgInput.value.trim();
+    if (!text) return;
+    pgInput.value = "";
+    pgAppend("user", text);
+    pgHistory.push({ role: "user", content: text });
+    pgSend.disabled = true;
+    try {
+      var res = await fetch(API_BASE + "/chat/" + localStorage.getItem(COMPANY_ID_KEY), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, customer_id: "playground_" + localStorage.getItem(COMPANY_ID_KEY), conversation_history: pgHistory })
+      });
+      var data = await res.json();
+      pgAppend("assistant", data.reply);
+      pgHistory.push({ role: "assistant", content: data.reply });
+    } catch (err) {
+      pgAppend("assistant", "Couldn't reach the assistant — try again.");
+    } finally {
+      pgSend.disabled = false;
+    }
+  }
+  pgSend.addEventListener("click", pgSendMessage);
+  pgInput.addEventListener("keydown", function (e) { if (e.key === "Enter") pgSendMessage(); });
 
   // ---------- Boot ----------
   if (token()) enterApp(false);

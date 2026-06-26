@@ -11,10 +11,10 @@
 <div id="auth-view" class="auth-wrap">
   <div class="auth-hero">
     <div class="auth-hero-badge">
-      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
-      Multi-tenant AI support, no LLM bill
+      <span class="live-dot"></span>
+      Multi-tenant AI infrastructure &middot; zero LLM bill
     </div>
-    <h1>One assistant.<br />Adapts to every<br />company that signs up.</h1>
+    <h1>One assistant.<br />Adapts to every<br /><span class="grad">company that signs up.</span></h1>
     <p class="lead">Upload your docs, embed a chat widget on your site, and let your
     assistant answer customers from your own knowledge base — with zero API key required.</p>
     <div class="auth-hero-features">
@@ -30,6 +30,11 @@
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7 10.3l2 2 4-4.6"/></svg>
         <span>Automatic reminders by email, SMS, or WhatsApp</span>
       </div>
+    </div>
+    <div class="auth-hero-stats">
+      <div><span class="num">$0</span><span class="label">LLM API cost</span></div>
+      <div><span class="num">100%</span><span class="label">Grounded answers</span></div>
+      <div><span class="num">&lt;1min</span><span class="label">To go live</span></div>
     </div>
   </div>
 
@@ -94,6 +99,7 @@
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg>
       </button>
     </div>
+    <div id="status-pill" class="status-pill"><span class="dot"></span><span id="status-pill-text">Checking status&hellip;</span></div>
     <nav>
       <button type="button" class="nav-btn active" data-section="overview">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
@@ -138,25 +144,47 @@
       <p class="muted">Your assistant is live. Upload documents to teach it, monitor what it can't
       answer yet, and set up reminders that send automatically.</p>
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-num" id="stat-docs">0</div><div>Documents indexed</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-gaps">0</div><div>Open knowledge gaps</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-reminders">0</div><div>Pending reminders</div></div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.5h7l3 3v12h-10z"/><path d="M12 2.5v3h3"/></svg></div>
+          </div>
+          <div class="stat-num" id="stat-docs">0</div><div>Documents indexed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M7.6 7.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .8-1 1.6"/></svg></div>
+          </div>
+          <div class="stat-num" id="stat-gaps">0</div><div>Open knowledge gaps</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8a5 5 0 0 1 10 0c0 3 1 4.5 1 4.5h-12s1-1.5 1-4.5z"/></svg></div>
+          </div>
+          <div class="stat-num" id="stat-reminders">0</div><div>Pending reminders</div>
+        </div>
       </div>
 
       <h3 class="section-subhead">Usage this month</h3>
       <div class="stat-grid">
         <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h14v9h-7l-3.5 3v-3h-3.5z"/></svg></div>
+            <span class="trend flat" id="stat-messages-trend"></span>
+          </div>
           <div class="stat-num" id="stat-messages">0</div>
           <div>Messages handled <span class="muted" id="stat-messages-limit"></span></div>
         </div>
         <div class="stat-card">
+          <div class="stat-card-top">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="10" rx="1.5"/><path d="M2.5 8.5h15"/></svg></div>
+          </div>
           <div class="stat-num" id="stat-plan-label">Free</div>
           <div>Current plan</div>
         </div>
       </div>
 
       <h3 class="section-subhead">Messages, last 14 days</h3>
-      <div id="usage-chart" class="bar-chart"></div>
+      <div class="chart-card"><svg id="usage-chart" viewBox="0 0 600 130" preserveAspectRatio="none"></svg></div>
 
       <h3 class="section-subhead">Customer sentiment</h3>
       <div id="sentiment-bar" class="sentiment-bar"></div>
@@ -171,12 +199,20 @@
         <input type="file" id="upload-file" accept=".pdf,.docx,.doc,.txt" required />
         <button type="submit"><span class="btn-label">Upload &amp; index</span></button>
       </form>
+      <div class="search-row">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M16 16l-3.5-3.5"/></svg>
+        <input type="text" id="doc-search" placeholder="Filter documents..." />
+      </div>
       <ul id="doc-list" class="item-list"></ul>
     </section>
 
     <section id="section-gaps" class="section hidden">
       <h2>Knowledge gaps</h2>
       <p class="muted">Questions the assistant couldn't answer. Answer once and it learns for next time.</p>
+      <div class="search-row">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M16 16l-3.5-3.5"/></svg>
+        <input type="text" id="gap-search" placeholder="Filter knowledge gaps..." />
+      </div>
       <ul id="gap-list" class="item-list"></ul>
     </section>
 
@@ -208,6 +244,10 @@
     <section id="section-logs" class="section hidden">
       <h2>Chat logs</h2>
       <p class="muted">Last 100 exchanges across all customers.</p>
+      <div class="search-row">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M16 16l-3.5-3.5"/></svg>
+        <input type="text" id="log-search" placeholder="Filter chat logs..." />
+      </div>
       <ul id="log-list" class="item-list"></ul>
     </section>
 
@@ -217,6 +257,20 @@
       automatically — tone, persona, and knowledge are pulled from your account.</p>
       <pre id="embed-snippet" class="code-block"></pre>
       <button type="button" id="copy-embed"><span class="btn-label">Copy snippet</span></button>
+
+      <h3 class="section-subhead">Test your assistant</h3>
+      <p class="muted">Try a question here exactly as a customer would — this calls the same live endpoint your widget uses.</p>
+      <div class="playground">
+        <div class="playground-header">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1.1 4.2L21 21l-5.3-1a8.5 8.5 0 1 1 5.3-8.5z" transform="translate(-2 -2) scale(.85)"/></svg>
+          Playground
+        </div>
+        <div id="pg-messages" class="playground-messages"><div class="pg-empty">Ask anything your customers might ask&hellip;</div></div>
+        <div class="playground-input-row">
+          <input type="text" id="pg-input" placeholder="e.g. what are your store hours?" />
+          <button type="button" id="pg-send">Send</button>
+        </div>
+      </div>
     </section>
 
     <section id="section-billing" class="section hidden">
